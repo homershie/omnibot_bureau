@@ -1,4 +1,5 @@
-# 🤖 OmniBot Bureau - OBB-01 「萬萬」
+# 萬用Bot事務所 OmniBot Bureau 
+# 🤖OBB-01 「萬萬」
 
 > **「你所交付的任務，祂都默默記下了。」**
 
