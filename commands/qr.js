@@ -24,6 +24,14 @@ export default async (event) => {
           type: "action",
           action: {
             type: "message",
+            text: "搜尋成分", // 👉 觸發搜尋流程
+            label: "🔍 搜尋食物成分",
+          },
+        },
+        {
+          type: "action",
+          action: {
+            type: "message",
             text: "萬萬有什麼功能", // 👉 回來這邊
             label: "📖 使用說明",
           },
