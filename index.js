@@ -6,6 +6,7 @@ import { getWikipediaSummary } from "./services/wikipedia.js";
 import recommendHandler from "./commands/recommend.js";
 import searchHandler from "./commands/searchSong.js";
 import { setUserState, getUserState, clearUserState } from "./utils/context.js";
+import handlePostback from "./commands/postback.js";
 import commandQr from "./commands/qr.js";
 
 const bot = linebot({
@@ -77,21 +78,11 @@ bot.on("message", async (event) => {
 });
 
 bot.on("postback", async (event) => {
-  const data = event.postback.data;
-
-  if (data.startsWith("action=explain")) {
-    const params = new URLSearchParams(data);
-    const title = params.get("title");
-    const artist = params.get("artist");
-
-    const summary = await getWikipediaSummary(title);
-
-    await event.reply({
-      type: "text",
-      text: summary
-        ? `🎵 ${title} 的背景故事：\n\n${summary}`
-        : `❌ 找不到「${title}」的相關介紹，請試試其他歌曲名稱。`,
-    });
+  try {
+    await handlePostback(event);
+  } catch (error) {
+    console.error("Postback 錯誤：", error);
+    await event.reply("發生錯誤，請稍後再試。");
   }
 });
 

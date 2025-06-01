@@ -1,4 +1,3 @@
-// commands/recommend.js
 import extractKeywordsFromText from "../utils/keyword-fuse.js";
 import { searchTracks } from "../services/spotify.js";
 
@@ -12,10 +11,8 @@ function formatDuration(ms) {
 
 const recommendHandler = async (event) => {
   const userInput = event.message.text.trim();
-
   const keywords = extractKeywordsFromText(userInput);
   const query = keywords.join(" ");
-
   const tracks = await searchTracks(query);
 
   if (tracks.length === 0) {
@@ -81,8 +78,9 @@ const recommendHandler = async (event) => {
           color: "#aaaaaa",
           action: {
             type: "postback",
-            label: "📖 背景故事",
-            data: `action=explain&title=${encodeURIComponent(track.name)}&artist=${encodeURIComponent(track.artist)}`,
+            label: "🔎 歌手介紹",
+            data: `action=wikiArtist&artist=${encodeURIComponent(track.artist)}`,
+            displayText: `查詢 ${track.artist} 的介紹`,
           },
         },
       ],
