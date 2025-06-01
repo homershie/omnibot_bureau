@@ -2,10 +2,9 @@ import "dotenv/config";
 import linebot from "linebot";
 import SpotifyWebApi from "spotify-web-api-node";
 import { authorizeSpotify, searchTracks } from "./services/spotify.js";
-import { getWikipediaSummary } from "./services/wikipedia.js";
+import { setUserState, getUserState, clearUserState } from "./utils/context.js";
 import recommendHandler from "./commands/recommend.js";
 import searchHandler from "./commands/searchSong.js";
-import { setUserState, getUserState, clearUserState } from "./utils/context.js";
 import handlePostback from "./commands/postback.js";
 import commandQr from "./commands/qr.js";
 

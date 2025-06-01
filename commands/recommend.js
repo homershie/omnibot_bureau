@@ -17,6 +17,10 @@ const recommendHandler = async (event) => {
 
   if (tracks.length === 0) {
     await event.reply("找不到符合的歌曲，試試其他情緒或風格描述吧！");
+    await event.reply({
+      type: "text",
+      text: "找不到符合的類型，試試這些？\n\n❤️ 戀愛\n😢 失戀\n🔥 生氣\n😌 放鬆\n🎉 興奮",
+    });
     return;
   }
 
