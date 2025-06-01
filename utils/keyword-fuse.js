@@ -1,8 +1,8 @@
-// utils/keyword-fuse.js
 import Fuse from "fuse.js";
-import emotionData from "./searchData.js";
 import aliasMap from "./aliasMap.js";
+import emotionData from "./emotionData.js"; // <- 要加這行
 
+// 初始化 Fuse.js
 const fuse = new Fuse(emotionData, {
   keys: ["keyword"],
   threshold: 0.4,

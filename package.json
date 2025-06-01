@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@vitalets/google-translate-api": "^9.2.1",
     "axios": "^1.9.0",
     "docenv": "^2.0.6",
     "fuse.js": "^7.1.0",
