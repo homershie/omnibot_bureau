@@ -4,6 +4,7 @@ import express from "express";
 import SpotifyWebApi from "spotify-web-api-node";
 import { authorizeSpotify, searchTracks } from "./services/spotify.js";
 import { setUserState, getUserState, clearUserState } from "./utils/context.js";
+import { character } from "./utils/characters.js";
 import generateSpotifyLoginURL from "./utils/generateSpotifyLoginURL.js";
 import spotifyCallbackRoute from "./routes/spotifyCallback.js";
 import recommendHandler from "./commands/recommend.js";
@@ -37,6 +38,13 @@ bot.on("message", async (event) => {
     // console.log(event);
     const userId = event.source.userId;
     const currentState = getUserState(userId);
+    const msg = event.message.text.trim();
+    const lowerMsg = msg.toLowerCase();
+    // 嘗試比對角色回應關鍵字
+    const match = character.responses.find(({ keywords }) =>
+      keywords.some((keyword) => lowerMsg.includes(keyword))
+    );
+    const reply = match ? match.reply : character.default;
 
     if (event.message.type === "text") {
       const text = event.message.text;
@@ -98,7 +106,9 @@ bot.on("message", async (event) => {
         text.toLowerCase().includes("help")
       ) {
         commandQr(event);
+        return;
       }
+      return event.reply(`${reply}`);
     } else if (
       event.message.type === "image" &&
       currentState === "awaiting_food_name"

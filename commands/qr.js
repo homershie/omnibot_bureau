@@ -1,7 +1,7 @@
 export default async (event) => {
   await event.reply({
     type: "text",
-    text: "請選擇你想使用的功能 👇",
+    text: "請選擇你想使用的功能，或是直接用文字跟我聊天 👇",
     quickReply: {
       items: [
         {
@@ -32,7 +32,7 @@ export default async (event) => {
           type: "action",
           action: {
             type: "message",
-            text: "萬萬有什麼功能", // 👉 回來這邊
+            text: "萬萬可以做什麼", // 👉 回來這邊
             label: "📖 使用說明",
           },
         },
