@@ -1,8 +1,9 @@
 import vision from "@google-cloud/vision";
 
-const visionClient = new vision.ImageAnnotatorClient({
-  keyFilename: "../etc/secrets/vision-key.json",
-});
+const keyFilename =
+  process.env.NODE_ENV === "production"
+    ? "/etc/secrets/vision-key.json" // Render 雲端路徑
+    : "../etc/secrets/vision-key.json"; // 本地開發路徑
 
 /**
  * 使用 Google Cloud Vision 的 webDetection 模式來取得食物名稱
