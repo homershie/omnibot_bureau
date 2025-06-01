@@ -1,7 +1,7 @@
 import vision from "@google-cloud/vision";
 
 const visionClient = new vision.ImageAnnotatorClient({
-  keyFilename: "./credentials/vision-key.json",
+  keyFilename: "../etc/secrets/vision-key.json",
 });
 
 /**
