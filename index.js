@@ -38,16 +38,16 @@ bot.on("message", async (event) => {
     // console.log(event);
     const userId = event.source.userId;
     const currentState = getUserState(userId);
-    // 嘗試比對角色回應關鍵字
-    const match = character.responses.find(({ keywords }) =>
-      keywords.some((keyword) => lowerMsg.includes(keyword))
-    );
-    const reply = match ? match.reply : character.default;
 
     if (event.message.type === "text") {
       const text = event.message.text;
       const msg = event.message.text.trim();
       const lowerMsg = msg.toLowerCase();
+      // 嘗試比對角色回應關鍵字
+      const match = character.responses.find(({ keywords }) =>
+        keywords.some((keyword) => lowerMsg.includes(keyword))
+      );
+      const reply = match ? match.reply : character.default;
 
       // 新增這段：處理 /spotify-login 指令
       // if (text === "/spotify-login") {
