@@ -57,7 +57,7 @@ bot.on("message", async (event) => {
       // }
 
       // 第一階段：啟動推薦流程
-      if (text.includes("推薦歌曲") || text === "推歌") {
+      if (text.includes("推薦歌曲") || text === "推歌" || text === "suggest") {
         await event.reply("請描述你此刻的心情或想聽的音樂風格～");
         setUserState(userId, "awaiting_music_description");
         return;
@@ -72,7 +72,11 @@ bot.on("message", async (event) => {
 
       // 使用者輸入搜尋歌曲 → 搜尋歌名（不走關鍵字）
 
-      if (text.includes("搜尋歌曲") || text === "找歌") {
+      if (
+        text.includes("搜尋歌曲") ||
+        text === "找歌" ||
+        text === "find song"
+      ) {
         await event.reply("請輸入你想搜尋的歌曲名稱。");
         setUserState(userId, "awaiting_music_name");
         return;
@@ -86,7 +90,11 @@ bot.on("message", async (event) => {
 
       // 使用者輸入搜尋成分 → 搜尋食物（不走關鍵字）
 
-      if (text.includes("搜尋成分") || text === "成分") {
+      if (
+        text.includes("搜尋成分") ||
+        text === "成分" ||
+        text === "find food"
+      ) {
         await event.reply("請輸入你想搜尋的食物（或上傳食物圖片）");
         setUserState(userId, "awaiting_food_name");
         return;
