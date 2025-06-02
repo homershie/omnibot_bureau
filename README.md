@@ -14,7 +14,7 @@ OmniBot Bureau（萬用Bot事務所）是一個多功能自動化事務所，專
 基於 Node.js 開發，串接 LINE Messaging API，歡迎隨手打招呼，他會假裝聽得懂。
 
 👉[加入好友](https://lin.ee/Q6Cj2JN)或是搜尋官方帳號：@655tjzaf
-![加入好友QRCode](./assets/images/logo.png)
+![加入好友QRCode](./assets/images/M_gainfriends_2dbarcodes_BW.png)
 
 ---
 
