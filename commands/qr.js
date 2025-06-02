@@ -32,6 +32,30 @@ export default async (event) => {
           type: "action",
           action: {
             type: "message",
+            text: "等下要吃什麼", // 👉 觸發搜尋流程
+            label: "🍱 推薦下一餐",
+          },
+        },
+        {
+          type: "action",
+          action: {
+            type: "message",
+            text: "推薦附近餐廳", // 👉 觸發搜尋流程
+            label: "🍜 推薦餐廳",
+          },
+        },
+        {
+          type: "action",
+          action: {
+            type: "message",
+            text: "想聽什麼", // 👉 觸發搜尋流程
+            label: "🎵 快速選擇音樂",
+          },
+        },
+        {
+          type: "action",
+          action: {
+            type: "message",
             text: "萬萬可以做什麼", // 👉 回來這邊
             label: "📖 使用說明",
           },

@@ -6,6 +6,7 @@ import { authorizeSpotify, searchTracks } from "./services/spotify.js";
 import { setUserState, getUserState, clearUserState } from "./utils/context.js";
 import { character } from "./utils/characters.js";
 import generateSpotifyLoginURL from "./utils/generateSpotifyLoginURL.js";
+import getSearchKeyword from "./utils/getSearchKeyword.js";
 import spotifyCallbackRoute from "./routes/spotifyCallback.js";
 import recommendHandler from "./commands/recommend.js";
 import searchSong from "./commands/searchSong.js";
@@ -13,6 +14,9 @@ import searchFood from "./commands/searchFood.js";
 import handlePostback from "./commands/postback.js";
 import commandQr from "./commands/qr.js";
 import searchFoodFromImage from "./commands/searchFoodFromImage.js";
+import eatWhat from "./commands/eatWhat.js";
+import qrFood from "./commands/qrFood.js";
+import searchNearby from "./commands/searchNearby.js";
 
 const bot = linebot({
   channelId: process.env.CHANNEL_ID,
@@ -107,6 +111,36 @@ bot.on("message", async (event) => {
         return;
       }
 
+      // 吃什麼推薦 Quick Reply
+      if (
+        text.includes("吃什麼") ||
+        text.includes("早餐") ||
+        text.includes("晚餐") ||
+        text.includes("中餐") ||
+        text.includes("推薦吃") ||
+        text.toLowerCase().includes("eat what") ||
+        text.toLowerCase().includes("dinner") ||
+        text.toLowerCase().includes("breakfast") ||
+        text.toLowerCase().includes("lunch")
+      ) {
+        await qrFood(event);
+        return;
+      }
+      // 吃什麼推薦關鍵字
+      const matched = await eatWhat(event);
+      if (matched) return;
+
+      // 用文字叫出位置查詢
+      if (
+        text.includes("附近餐廳") ||
+        text.includes("找吃的") ||
+        text.includes("找餐廳")
+      ) {
+        await event.reply("請傳送您的位置，我幫您找附近餐廳 📍");
+        setUserState(userId, "awaiting_location");
+        return;
+      }
+
       // 功能介紹：萬萬有什麼功能？
       if (
         text.includes("萬萬有什麼功能") ||
@@ -126,11 +160,27 @@ bot.on("message", async (event) => {
       await searchFoodFromImage(event); //
       return;
     } else if (event.message.type === "sticker") {
-      await event.reply("可愛的貼圖！");
+      await event.reply([
+        { type: "text", text: "可愛的貼圖！" },
+        { type: "sticker", packageId: "789", stickerId: "10857" },
+      ]);
     } else if (event.message.type === "image") {
-      await event.reply("謝謝你分享的圖片！");
+      await event.reply([
+        { type: "text", text: "謝謝你分享的圖片！" },
+        { type: "sticker", packageId: "789", stickerId: "10863" },
+      ]);
+    } else if (event.message.type === "location") {
+      // 處理位置訊息
+      if (currentState === "awaiting_location") {
+        clearUserState(userId);
+        const handled = await searchNearby(event);
+        if (handled) return;
+      }
     } else {
-      await event.reply("我不太明白這個訊息類型。");
+      await event.reply([
+        { type: "text", text: "我不太明白這個訊息類型。" },
+        { type: "sticker", packageId: "8522", stickerId: "16581287" },
+      ]);
     }
   } catch (error) {
     console.error("錯誤回復：", error);
