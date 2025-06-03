@@ -7,7 +7,13 @@ export default async function searchNearby(event) {
   const radius = 1000;
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
-  const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=${radius}&type=restaurant&language=zh-TW&key=${apiKey}`;
+  // 如果是「隨便」就不加 keyword 參數
+  const keywordParam =
+    event.keyword && event.keyword !== "隨便"
+      ? `&keyword=${encodeURIComponent(event.keyword)}`
+      : "";
+
+  const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=1000&type=restaurant&language=zh-TW&key=${apiKey}${keywordParam}`;
 
   const res = await fetch(url);
   const data = await res.json();
@@ -124,9 +130,15 @@ export default async function searchNearby(event) {
     };
   });
 
+  // 根據是否有指定類型調整回覆訊息
+  const messageText =
+    event.keyword && event.keyword !== "隨便"
+      ? `附近的「${event.keyword}」餐廳推薦`
+      : "附近餐廳推薦";
+
   const flexMessage = {
     type: "flex",
-    altText: "附近餐廳推薦",
+    altText: messageText,
     contents: {
       type: "carousel",
       contents: bubbles,

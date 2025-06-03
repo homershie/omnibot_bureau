@@ -1,12 +1,10 @@
 import "dotenv/config";
 import linebot from "linebot";
 import express from "express";
-import SpotifyWebApi from "spotify-web-api-node";
-import { authorizeSpotify, searchTracks } from "./services/spotify.js";
+import { authorizeSpotify } from "./services/spotify.js";
 import { setUserState, getUserState, clearUserState } from "./utils/context.js";
 import { character } from "./utils/characters.js";
 import generateSpotifyLoginURL from "./utils/generateSpotifyLoginURL.js";
-import getSearchKeyword from "./utils/getSearchKeyword.js";
 import spotifyCallbackRoute from "./routes/spotifyCallback.js";
 import recommendHandler from "./commands/recommend.js";
 import searchSong from "./commands/searchSong.js";
@@ -15,7 +13,7 @@ import handlePostback from "./commands/postback.js";
 import commandQr from "./commands/qr.js";
 import searchFoodFromImage from "./commands/searchFoodFromImage.js";
 import eatWhat from "./commands/eatWhat.js";
-import qrFood from "./commands/qrFood.js";
+import qrFoodType from "./commands/qrFoodType.js";
 import searchNearby from "./commands/searchNearby.js";
 
 const bot = linebot({
@@ -111,24 +109,44 @@ bot.on("message", async (event) => {
         return;
       }
 
+      // 處理食物推薦的回應
+      if (currentState?.state === "awaiting_food_decision") {
+        if (text === "好啊" || text.includes("好") || text.includes("ok")) {
+          await clearUserState(userId);
+          await event.reply([
+            {
+              type: "text",
+              text: `太棒了！享用你的「${currentState.lastRecommended}」吧！😋`,
+            },
+            { type: "sticker", packageId: "789", stickerId: "10855" },
+          ]);
+          return;
+        } else if (
+          text === "不要" ||
+          text.includes("不要") ||
+          text.includes("換")
+        ) {
+          // 不清除狀態，繼續推薦
+          await eatWhat(event); // 重新推薦
+          return;
+        }
+      }
+
       // 吃什麼推薦 Quick Reply
       if (
-        text.includes("吃什麼") ||
         text.includes("早餐") ||
         text.includes("晚餐") ||
         text.includes("中餐") ||
         text.includes("推薦吃") ||
+        text.includes("吃什麼") ||
         text.toLowerCase().includes("eat what") ||
         text.toLowerCase().includes("dinner") ||
         text.toLowerCase().includes("breakfast") ||
         text.toLowerCase().includes("lunch")
       ) {
-        await qrFood(event);
+        await eatWhat(event);
         return;
       }
-      // 吃什麼推薦關鍵字
-      const matched = await eatWhat(event);
-      if (matched) return;
 
       // 用文字叫出位置查詢
       if (
@@ -136,8 +154,30 @@ bot.on("message", async (event) => {
         text.includes("找吃的") ||
         text.includes("找餐廳")
       ) {
-        await event.reply("請傳送您的位置，我幫您找附近餐廳 📍");
-        setUserState(userId, "awaiting_location");
+        await qrFoodType(event);
+        return;
+      }
+
+      // 使用者選了類型，如：附近火鍋
+      const foodSearchMatch = text.match(/^找(.{2,6})$/);
+      if (foodSearchMatch) {
+        const keyword = foodSearchMatch[1];
+        await setUserState(event.source.userId, { wantType: keyword });
+        await event.reply({
+          type: "text",
+          text: `請傳送你的位置，我幫你找附近的「${keyword}」餐廳 📍`,
+          quickReply: {
+            items: [
+              {
+                type: "action",
+                action: {
+                  type: "location",
+                  label: "傳送位置",
+                },
+              },
+            ],
+          },
+        });
         return;
       }
 
@@ -170,12 +210,17 @@ bot.on("message", async (event) => {
         { type: "sticker", packageId: "789", stickerId: "10863" },
       ]);
     } else if (event.message.type === "location") {
-      // 處理位置訊息
-      if (currentState === "awaiting_location") {
-        clearUserState(userId);
-        const handled = await searchNearby(event);
-        if (handled) return;
+      const state = await getUserState(event.source.userId);
+      if (state?.wantType) {
+        event.keyword = state.wantType; // 將類型傳給查詢函式
+        await searchNearby(event); // 執行附近推薦
+        await clearUserState(event.source.userId);
+        return;
       }
+      await event.reply([
+        { type: "text", text: "謝謝你分享的位置！" },
+        { type: "sticker", packageId: "789", stickerId: "10861" },
+      ]);
     } else {
       await event.reply([
         { type: "text", text: "我不太明白這個訊息類型。" },
