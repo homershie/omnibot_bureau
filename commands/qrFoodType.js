@@ -22,10 +22,6 @@ export default async function sendTypeSelector(event) {
         },
         {
           type: "action",
-          action: { type: "message", label: "🍣 壽司", text: "找壽司" },
-        },
-        {
-          type: "action",
           action: { type: "message", label: "🍥 拉麵", text: "找拉麵" },
         },
         {
