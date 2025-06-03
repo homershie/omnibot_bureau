@@ -12,7 +12,7 @@ export default async function eatWhat(event) {
   const randomPick = foodList[Math.floor(Math.random() * foodList.length)];
 
   // 設定使用者狀態，記錄當前推薦的食物
-  await setUserState(event.source.userId, {
+  setUserState(event.source.userId, {
     state: "awaiting_food_decision",
     lastRecommended: randomPick.name,
   });

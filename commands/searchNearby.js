@@ -1,19 +1,43 @@
-import fetch from "node-fetch";
+import { getUserState, clearUserState } from "../utils/context.js";
 
-export default async function searchNearby(event) {
-  if (event.message.type !== "location") return false;
-
-  const { latitude, longitude } = event.message;
-  const radius = 1000;
+export default async function searchNearby(
+  event,
+  latitude = null,
+  longitude = null
+) {
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  let lat,
+    lng,
+    keyword = "餐廳";
 
-  // 如果是「隨便」就不加 keyword 參數
+  // 如果有傳入座標參數，直接使用
+  if (latitude && longitude) {
+    lat = latitude;
+    lng = longitude;
+
+    // 從用戶狀態取得餐廳類型
+    const userState = getUserState(event.source.userId);
+    if (userState?.wantType) {
+      keyword = userState.wantType;
+      clearUserState(event.source.userId);
+    }
+  }
+  // 否則從 location 訊息取得
+  else if (event.message.type === "location") {
+    lat = event.message.latitude;
+    lng = event.message.longitude;
+    keyword = event.keyword || "餐廳";
+  } else {
+    return false;
+  }
+
+  // ...rest of the code remains the same...
   const keywordParam =
-    event.keyword && event.keyword !== "隨便"
-      ? `&keyword=${encodeURIComponent(event.keyword)}`
+    keyword && keyword !== "隨便"
+      ? `&keyword=${encodeURIComponent(keyword)}`
       : "";
 
-  const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=1000&type=restaurant&language=zh-TW&key=${apiKey}${keywordParam}`;
+  const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=1000&type=restaurant&language=zh-TW&key=${apiKey}${keywordParam}`;
 
   const res = await fetch(url);
   const data = await res.json();

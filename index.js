@@ -14,6 +14,7 @@ import commandQr from "./commands/qr.js";
 import searchFoodFromImage from "./commands/searchFoodFromImage.js";
 import eatWhat from "./commands/eatWhat.js";
 import qrFoodType from "./commands/qrFoodType.js";
+import qrFoodType2 from "./commands/qrFoodType2.js";
 import searchNearby from "./commands/searchNearby.js";
 
 const bot = linebot({
@@ -151,33 +152,65 @@ bot.on("message", async (event) => {
       // 用文字叫出位置查詢
       if (
         text.includes("附近餐廳") ||
+        text.includes("推薦附近餐廳") ||
         text.includes("找吃的") ||
         text.includes("找餐廳")
       ) {
+        console.log("觸發餐廳類型選擇，文字:", text); // 除錯用
         await qrFoodType(event);
         return;
       }
 
-      // 使用者選了類型，如：附近火鍋
+      // 處理更多餐廳選項
+      if (text === "更多餐廳選項") {
+        await qrFoodType2(event); // 新增第二組選項
+        return;
+      }
+
+      // 處理回到第一組
+      if (text === "餐廳類型第一組") {
+        await qrFoodType(event);
+        return;
+      }
+
+      // 使用者選了類型，如：找火鍋
       const foodSearchMatch = text.match(/^找(.{2,6})$/);
       if (foodSearchMatch) {
         const keyword = foodSearchMatch[1];
-        await setUserState(event.source.userId, { wantType: keyword });
-        await event.reply({
-          type: "text",
-          text: `請傳送你的位置，我幫你找附近的「${keyword}」餐廳 📍`,
-          quickReply: {
-            items: [
-              {
-                type: "action",
-                action: {
-                  type: "location",
-                  label: "傳送位置",
-                },
-              },
-            ],
-          },
+
+        if (keyword === "隨便") {
+          // 直接呼叫隨機推薦
+          await eatWhat(event);
+          return;
+        }
+
+        // 儲存用戶想要的餐廳類型，等待位置分享
+        setUserState(userId, {
+          state: "awaiting_location",
+          wantType: keyword,
         });
+
+        await event.reply([
+          {
+            type: "text",
+            text: `好的！幫您找附近的${keyword}餐廳 🔍\n請分享您的位置：`,
+          },
+          {
+            type: "text",
+            text: "點擊下方按鈕分享位置 📍",
+            quickReply: {
+              items: [
+                {
+                  type: "action",
+                  action: {
+                    type: "location",
+                    label: "📍 分享我的位置",
+                  },
+                },
+              ],
+            },
+          },
+        ]);
         return;
       }
 
@@ -210,11 +243,13 @@ bot.on("message", async (event) => {
         { type: "sticker", packageId: "789", stickerId: "10863" },
       ]);
     } else if (event.message.type === "location") {
-      const state = await getUserState(event.source.userId);
-      if (state?.wantType) {
-        event.keyword = state.wantType; // 將類型傳給查詢函式
-        await searchNearby(event); // 執行附近推薦
-        await clearUserState(event.source.userId);
+      const userState = getUserState(userId);
+
+      if (userState?.state === "awaiting_location" && userState?.wantType) {
+        const { latitude, longitude } = event.message;
+
+        // 呼叫搜尋附近餐廳，傳入座標和餐廳類型
+        await searchNearby(event, latitude, longitude);
         return;
       }
       await event.reply([
