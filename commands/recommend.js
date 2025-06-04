@@ -1,14 +1,7 @@
 import extractKeywordsFromText from "../utils/keyword-fuse.js";
 import { translateToChinese } from "../utils/translate.js";
 import { searchTracks } from "../services/spotify.js";
-
-function formatDuration(ms) {
-  const minutes = Math.floor(ms / 60000);
-  const seconds = Math.floor((ms % 60000) / 1000)
-    .toString()
-    .padStart(2, "0");
-  return `${minutes}:${seconds}`;
-}
+import { createSongCarousel } from "../templates/songCarousel.js";
 
 const recommendHandler = async (event) => {
   const userInput = event.message.text.trim();
@@ -20,89 +13,22 @@ const recommendHandler = async (event) => {
   const tracks = await searchTracks(query);
 
   if (tracks.length === 0) {
-    await event.reply("找不到符合的歌曲，試試其他情緒或風格描述吧！");
-    await event.reply({
-      type: "text",
-      text: "試試這些？\n\n❤️ 戀愛\n😢 失戀\n🔥 生氣\n😌 放鬆\n🎉 興奮",
-    });
+    await event.reply([
+      { type: "text", text: "找不到符合的歌曲，試試其他情緒或風格描述吧！" },
+      {
+        type: "text",
+        text: "試試這些？\n\n❤️ 戀愛\n😢 失戀\n🔥 生氣\n😌 放鬆\n🎉 興奮",
+      },
+    ]);
     return;
   }
 
-  const bubbles = tracks.map((track) => ({
-    type: "bubble",
-    hero: {
-      type: "image",
-      url: track.image,
-      size: "full",
-      aspectRatio: "1:1",
-      aspectMode: "cover",
-    },
-    body: {
-      type: "box",
-      layout: "vertical",
-      spacing: "md",
-      contents: [
-        {
-          type: "text",
-          text: `🎵 ${track.name}`,
-          weight: "bold",
-          size: "md",
-          wrap: true,
-          color: "#1DB954",
-        },
-        {
-          type: "text",
-          text: `👤 ${track.artist}`,
-          size: "sm",
-          color: "#666666",
-          wrap: true,
-        },
-        {
-          type: "text",
-          text: `⏱️ ${formatDuration(track.duration)}`,
-          size: "sm",
-          color: "#999999",
-        },
-      ],
-    },
-    footer: {
-      type: "box",
-      layout: "vertical",
-      spacing: "sm",
-      contents: [
-        {
-          type: "button",
-          style: "primary",
-          color: "#1DB954",
-          action: {
-            type: "uri",
-            label: "🎧 前往 Spotify",
-            uri: track.url,
-          },
-        },
-        {
-          type: "button",
-          style: "secondary",
-          color: "#aaaaaa",
-          action: {
-            type: "postback",
-            label: "🔎 歌手介紹",
-            data: `action=wikiArtist&artist=${encodeURIComponent(track.artist)}`,
-            displayText: `查詢 ${track.artist} 的介紹`,
-          },
-        },
-      ],
-    },
-  }));
-
-  await event.reply({
-    type: "flex",
-    altText: "為你推薦的 Spotify 歌曲",
-    contents: {
-      type: "carousel",
-      contents: bubbles,
-    },
-  });
+  const flexMessage = createSongCarousel(
+    tracks,
+    "為你推薦的 Spotify 歌曲",
+    "recommend"
+  );
+  await event.reply(flexMessage);
 };
 
 export default recommendHandler;
