@@ -2,7 +2,7 @@ export default async function sendTypeSelector(event) {
   return event.reply([
     {
       type: "text",
-      text: "想吃哪一類呢？🍽️（第一組）",
+      text: "想吃哪一類呢？🍽️（第一組）\n或是輸入【找○○】直接搜尋！",
       quickReply: {
         items: [
           {
